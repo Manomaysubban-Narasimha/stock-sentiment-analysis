@@ -72,8 +72,8 @@ def analyze_stock_sentiment(stock_symbol):
     sentiments = []
     article_details = []
     
-    # Process all fetched articles, up to 10
-    for article in articles[:10]:
+    # Process all fetched articles, up to 100
+    for article in articles[:100]:
         title = article.get('title', '')
         description = article.get('description', '')
         url = article.get('url', '')
