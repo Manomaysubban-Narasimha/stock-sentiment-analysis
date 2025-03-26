@@ -18,7 +18,7 @@ def load_finbert_model():
 tokenizer, model = load_finbert_model()
 
 def get_stock_news(stock_symbol):
-    API_KEY = st.secrets["news_api_key"]  # NewsAPI key
+    API_KEY = st.secrets["news_api_key"] 
     url = 'https://newsapi.org/v2/everything'
     
     end_date = datetime.now()
@@ -52,7 +52,6 @@ def analyze_sentiment(text):
         outputs = model(**inputs)
         logits = outputs.logits
     probs = torch.softmax(logits, dim=1).tolist()[0]
-    labels = ['negative', 'neutral', 'positive']
     sentiment_idx = probs.index(max(probs))
     if sentiment_idx == 0:  # negative
         compound = -probs[0]
@@ -122,15 +121,13 @@ def main():
     st.title("Stock Sentiment Analyzer")
     st.write("Enter a stock symbol to analyze sentiment based on recent financial news articles.")
     
-    # Input field for stock symbol
     stock_symbol = st.text_input("Stock Symbol (e.g., AAPL for Apple)", "").upper()
     
-    # Button to trigger analysis
     if st.button("Analyze Sentiment"):
         if stock_symbol:
             with st.spinner("Fetching and analyzing news..."):
                 result = analyze_stock_sentiment(stock_symbol)
-                st.markdown(result)  # Display result with markdown for formatting
+                st.markdown(result)  
         else:
             st.warning("Please enter a stock symbol.")
 
