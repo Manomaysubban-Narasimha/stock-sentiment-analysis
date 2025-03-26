@@ -1,3 +1,15 @@
+# Python virtual environments
+venv/
+env/
 .venv/
+.env/
 
-.streamlit/
+# Python cache files
+__pycache__/
+*.pyc
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# macOS files
+.DS_Store
