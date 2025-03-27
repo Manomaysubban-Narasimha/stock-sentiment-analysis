@@ -265,14 +265,14 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
         
         # Display company financials
-        if st.button("Show Company Financials"):
-            financials = get_company_financials(stock_symbol)
-            st.markdown(financials)
+        st.header("Financials")
+        financials = get_company_financials(stock_symbol)
+        st.markdown(financials)
         
-        if st.button("Analyze Sentiment"):
-            with st.spinner("Fetching and analyzing news..."):
-                result = analyze_stock_sentiment(stock_symbol)
-                st.markdown(result)
+        st.header("Sentiment Analysis") 
+        with st.spinner("Fetching and analyzing news..."):
+            result = analyze_stock_sentiment(stock_symbol)
+            st.markdown(result)
     else:
         st.warning("Please enter a stock symbol.")
 
