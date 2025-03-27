@@ -191,12 +191,14 @@ def get_company_financials(symbol):
     net_profit = info.get('netIncomeToCommon', 'N/A')
     cash = info.get('totalCash', 'N/A')
     market_cap = info.get('marketCap', 'N/A')
-    pe_ratio = info.get('trailingPE', 'N/A')
+    trailing_pe_ratio = info.get('trailingPE', 'N/A')
+    forward_pe_ratio = info.get('forwardPE', 'N/A')
     
     revenue = format_value(revenue)
     net_profit = format_value(net_profit)
     cash = format_value(cash)
     market_cap = format_value(market_cap)
+    
     # Format the output
     financials = f"""
     **Company Financials for {symbol}:**
@@ -204,7 +206,8 @@ def get_company_financials(symbol):
     - **Net Profit/Bottom Line (Trailing 12 months ending December 31, 2024):** ${net_profit}
     - **Total Cash (quarter ending December 31, 2024):** ${cash}
     - **Market Cap:** ${market_cap}
-    - **PE Ratio:** {pe_ratio:.2f}
+    - **Trailing PE Ratio:** {trailing_pe_ratio:.2f}
+    - **Forward PE Ratio:** {forward_pe_ratio:.2f}
     """
     
     return financials
