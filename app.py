@@ -8,6 +8,10 @@ import yfinance as yf
 import plotly.graph_objects as go
 
 MAX_FREE_TIER_MAXIMIZE_FETCH = 100
+MILLION = 1_000_000
+BILLION = 1_000_000_000
+TRILLION = 1_000_000_000_000
+THOUSAND = 1_000
 
 # Load FinBERT model and tokenizer (cached to avoid reloading)
 @st.cache_resource
@@ -178,8 +182,71 @@ def plot_stock_price(symbol, timeframe):
     return fig
 
 
+def get_company_financials(symbol):
+    stock = yf.Ticker(symbol)
+    info = stock.info
+    
+    # Extract relevant financial data
+    revenue = info.get('totalRevenue', 'N/A')
+    net_profit = info.get('netIncomeToCommon', 'N/A')
+    cash = info.get('totalCash', 'N/A')
+    market_cap = info.get('marketCap', 'N/A')
+    pe_ratio = info.get('trailingPE', 'N/A')
+    
+    revenue = format_value(revenue)
+    net_profit = format_value(net_profit)
+    cash = format_value(cash)
+    market_cap = format_value(market_cap)
+    # Format the output
+    financials = f"""
+    **Company Financials for {symbol}:**
+    - **Total Revenue (Trailing 12 months ending December 31, 2024):** ${revenue}
+    - **Net Profit/Bottom Line (Trailing 12 months ending December 31, 2024):** ${net_profit}
+    - **Total Cash (quarter ending December 31, 2024):** ${cash}
+    - **Market Cap:** ${market_cap}
+    - **PE Ratio:** {pe_ratio:.2f}
+    """
+    
+    return financials
+
+
+def is_in_millions(value):
+    return MILLION <= value < BILLION
+
+
+def in_millions(value):
+    return f'{value / MILLION:.2f} million'
+
+
+def is_in_billions(value):
+    return BILLION <= value < TRILLION
+
+
+def in_billions(value):
+    return f'{value / BILLION:.2f} billion'
+
+
+def is_in_trillions(value):
+    return value >= TRILLION
+
+
+def in_trillions(value):
+    return f'{value / TRILLION:.2f} trillion'
+
+
+def format_value(value):
+    if is_in_millions(value):
+        return in_millions(value)
+    elif is_in_billions(value):
+        return in_billions(value)
+    elif is_in_trillions(value):
+        return in_trillions(value)
+    else:
+        return f'{value:.2f}'
+
+
 def main():
-    st.title("Stock Sentiment Analyzer")
+    st.title("Stock Analyzer")
     st.write("Enter a stock symbol to analyze sentiment based on recent financial news articles.")
     
     stock_symbol = st.text_input("Stock Symbol (e.g., AAPL for Apple)", "").upper()
@@ -193,6 +260,11 @@ def main():
         fig = plot_stock_price(stock_symbol, selected_timeframe)
         if fig:
             st.plotly_chart(fig, use_container_width=True)
+        
+        # Display company financials
+        if st.button("Show Company Financials"):
+            financials = get_company_financials(stock_symbol)
+            st.markdown(financials)
         
         if st.button("Analyze Sentiment"):
             with st.spinner("Fetching and analyzing news..."):
