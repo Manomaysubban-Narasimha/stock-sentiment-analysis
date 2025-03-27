@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from transformers import BertTokenizer, BertForSequenceClassification
 import torch
 from statistics import mean
+import yfinance as yf
+import plotly.graph_objects as go
 
 MAX_FREE_TIER_MAXIMIZE_FETCH = 100
 
@@ -116,19 +118,88 @@ def analyze_stock_sentiment(stock_symbol):
     return output
 
 
+def plot_stock_price(symbol, timeframe):
+    # Define timeframe parameters
+    end_date = datetime.now()
+    if timeframe == '1d':
+        start_date = end_date - timedelta(days=1)
+        interval = '5m'
+    elif timeframe == '1w':
+        start_date = end_date - timedelta(weeks=1)
+        interval = '15m'
+    elif timeframe == '1m':
+        start_date = end_date - timedelta(days=30)
+        interval = '1h'
+    elif timeframe == '3m':
+        start_date = end_date - timedelta(days=90)
+        interval = '1d'
+    elif timeframe == '6m':
+        start_date = end_date - timedelta(days=180)
+        interval = '1d'
+    elif timeframe == 'ytd':
+        start_date = datetime(end_date.year, 1, 1)
+        interval = '1d'
+    elif timeframe == '1y':
+        start_date = end_date - timedelta(days=365)
+        interval = '1d'
+    elif timeframe == '3y':
+        start_date = end_date - timedelta(days=1095)
+        interval = '1d'
+    elif timeframe == '5y':
+        start_date = end_date - timedelta(days=1825)
+        interval = '1d'
+    else:  # max
+        start_date = None
+        interval = '1d'
+
+    # Fetch stock data
+    stock = yf.Ticker(symbol)
+    df = stock.history(start=start_date, end=end_date, interval=interval)
+    
+    if df.empty:
+        st.error(f"No data available for {symbol}")
+        return
+
+    # Create the candlestick chart
+    fig = go.Figure(data=[go.Candlestick(x=df.index,
+                open=df['Open'],
+                high=df['High'],
+                low=df['Low'],
+                close=df['Close'])])
+
+    # Update layout
+    fig.update_layout(
+        title=f'{symbol} Stock Price ({timeframe})',
+        yaxis_title='Price',
+        xaxis_title='Date',
+        template='plotly_dark'
+    )
+
+    return fig
+
+
 def main():
     st.title("Stock Sentiment Analyzer")
     st.write("Enter a stock symbol to analyze sentiment based on recent financial news articles.")
     
     stock_symbol = st.text_input("Stock Symbol (e.g., AAPL for Apple)", "").upper()
     
-    if st.button("Analyze Sentiment"):
-        if stock_symbol:
+    if stock_symbol:
+        # Add timeframe selector
+        timeframes = ['1d', '1w', '1m', '3m', '6m', 'ytd', '1y', '3y', '5y', 'max']
+        selected_timeframe = st.selectbox('Select Timeframe', timeframes)
+        
+        # Plot stock price
+        fig = plot_stock_price(stock_symbol, selected_timeframe)
+        if fig:
+            st.plotly_chart(fig, use_container_width=True)
+        
+        if st.button("Analyze Sentiment"):
             with st.spinner("Fetching and analyzing news..."):
                 result = analyze_stock_sentiment(stock_symbol)
-                st.markdown(result)  
-        else:
-            st.warning("Please enter a stock symbol.")
+                st.markdown(result)
+    else:
+        st.warning("Please enter a stock symbol.")
 
 
 if __name__ == "__main__":
